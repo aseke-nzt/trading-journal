@@ -184,4 +184,625 @@
         </div>
         <div class="card stat-card">
             <div class="stat-label">Средний RR</div>
-            <div class="stat-value" style="color: var(--accent)" id="st
+            <div class="stat-value" style="color: var(--accent)" id="st-avg-rr">0.00</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="filters-title"><span>📊 РЕЗУЛЬТАТЫ ПО ДНЯМ НЕДЕЛИ</span></div>
+        <div class="days-grid" id="daysGrid"></div>
+    </div>
+
+    <div class="card">
+        <div class="filters-title"><span>КРИВАЯ РЕЗУЛЬТАТА (R)</span> <span class="btn" id="chart-total-r">+0.00R</span></div>
+        <div style="height: 250px; width: 100%;">
+            <canvas id="pnlChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="filters-title"><span>⚙ Фильтры</span></div>
+        <div class="filter-group">
+            <div class="filter-group-name">Результат</div>
+            <div class="tags"><div class="tag">WIN</div><div class="tag">LOSS</div><div class="tag">BE</div></div>
+        </div>
+        <div class="filter-group">
+            <div class="filter-group-name">Модель входа</div>
+            <div class="tags">
+                <div class="tag">Слом структуры по 4 точкам на М3-М5</div>
+                <div class="tag">ТП на М3-М5</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-header">
+            <span>Сделки</span>
+            <span id="table-count" style="color: var(--text-muted); font-size: 13px;">0</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Дата</th>
+                    <th>Актив</th>
+                    <th>Напр.</th>
+                    <th>Модель</th>
+                    <th>Итог</th>
+                    <th>R (RR)</th>
+                    <th>Профит ($)</th>
+                </tr>
+            </thead>
+            <tbody id="tradesTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Модальное окно добавления / редактирования -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <button class="close-btn" onclick="closeModals()">✕</button>
+        <h2 style="margin-top: 0;" id="modalFormTitle">Новая сделка</h2>
+        <form id="tradeForm">
+            <input type="hidden" id="t-edit-id" value="">
+            <div class="form-grid">
+                <div class="form-group"><label>Дата</label><input type="date" id="t-date" required></div>
+                <div class="form-group"><label>Инструмент (Forex)</label>
+                    <select id="t-asset" required>
+                        <option value="XAUUSD">XAUUSD (GOLD)</option>
+                        <option value="EURUSD">EURUSD</option>
+                        <option value="GBPUSD">GBPUSD</option>
+                        <option value="USDJPY">USDJPY</option>
+                        <option value="AUDUSD">AUDUSD</option>
+                        <option value="USDCAD">USDCAD</option>
+                        <option value="USDCHF">USDCHF</option>
+                        <option value="NZDUSD">NZDUSD</option>
+                        <option value="EURGBP">EURGBP</option>
+                        <option value="EURJPY">EURJPY</option>
+                        <option value="GBPJPY">GBPJPY</option>
+                        <option value="XAGUSD">XAGUSD (SILVER)</option>
+                        <option value="BTCUSDT">BTCUSDT</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Направление</label>
+                    <select id="t-dir"><option value="Long">Лонг ↗</option><option value="Short">Шорт ↘</option></select>
+                </div>
+                <div class="form-group"><label>Модель входа</label>
+                    <select id="t-model" required>
+                        <option value="Слом структуры по 4 точкам на М3-М5">Слом структуры по 4 точкам на М3-М5</option>
+                        <option value="ТП на М3-М5">ТП на М3-М5</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Таймфрейм</label><input type="text" id="t-tf" value="M3-M5" required></div>
+                <div class="form-group"><label>Риск на сделку ($)</label><input type="number" id="t-risk" step="any" placeholder="100" value="100" required></div>
+                
+                <div class="form-group"><label>Цена Входа</label><input type="number" id="t-entry" step="any" required></div>
+                <div class="form-group"><label>Цена Стопа</label><input type="number" id="t-stop" step="any" required></div>
+                <div class="form-group"><label>Цена Тейка</label><input type="number" id="t-take" step="any" required></div>
+                <div class="form-group"><label>Цена Выхода (Фактическая)</label><input type="number" id="t-exit" step="any" required></div>
+                
+                <div class="form-group form-full">
+                    <label>Скриншоты (Кликните по рамке и нажмите Ctrl+V)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="paste-zone active-zone" id="pz1" tabindex="0" onclick="setActiveZone('pz1')">
+                            📋 <b>График 1 (Контекст)</b><br>Нажмите Ctrl+V или кликните
+                            <input type="file" id="f-img1" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'pz1')">
+                        </div>
+                        <div class="paste-zone" id="pz2" tabindex="0" onclick="setActiveZone('pz2')">
+                            📋 <b>График 2 (Вход)</b><br>Нажмите Ctrl+V или кликните
+                            <input type="file" id="f-img2" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'pz2')">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group form-full">
+                    <button type="submit" id="submitFormBtn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">Сохранить сделку</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра сделки -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal">
+        <button class="close-btn" onclick="closeModals()">✕</button>
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; padding-right: 35px;">
+            <div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--text-main);" id="v-title">GOLD <span style="font-size: 16px;" id="v-dir">↗ лонг</span></div>
+                <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;" id="v-date">2026-01-05 • №1</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="editCurrentTrade()">✎ Изменить</button>
+                <button class="btn btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="deleteCurrentTrade()">🗑 Удалить</button>
+            </div>
+        </div>
+
+        <div class="view-grid">
+            <div class="vg-col">
+                <h4>Результат</h4>
+                <div class="info-card"><label>Итог</label><div class="val" id="v-res">WIN</div></div>
+                <div class="info-card"><label>R (RR)</label><div class="val" id="v-r">+1.43R</div></div>
+                <div class="info-card"><label>Профит</label><div class="val" id="v-pnl">+143.00 $</div></div>
+            </div>
+            <div class="vg-col">
+                <h4>Сделка</h4>
+                <div class="info-card"><label>Модель</label><div class="val" id="v-model" style="font-size: 13px;">Слом структуры...</div></div>
+                <div class="info-card"><label>Таймфрейм</label><div class="val" id="v-tf">M3-M5</div></div>
+                <div class="info-card"><label>Риск</label><div class="val" id="v-risk">100 $</div></div>
+            </div>
+            <div class="vg-col">
+                <h4>Котировки</h4>
+                <div class="info-card"><label>Вход</label><div class="val" id="v-entry">4414.48</div></div>
+                <div class="info-card"><label>Стоп</label><div class="val" id="v-stop">4396.66</div></div>
+                <div class="info-card"><label>Тейк</label><div class="val" id="v-take">4439.99</div></div>
+                <div class="info-card"><label>Выход</label><div class="val" id="v-exit">4439.99</div></div>
+            </div>
+        </div>
+        
+        <div class="images-section">
+            <div class="paste-zone" id="v-img1-box" style="height: 160px; cursor: pointer;">📊 График 1</div>
+            <div class="paste-zone" id="v-img2-box" style="height: 160px; cursor: pointer;">📈 График 2</div>
+        </div>
+    </div>
+</div>
+
+<div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Zoomed Screenshot">
+</div>
+
+<script>
+    let rawTrades = JSON.parse(localStorage.getItem('proTrades')) || JSON.parse(localStorage.getItem('trades')) || [];
+    
+    let trades = rawTrades.map((t, index) => {
+        const riskAmount = t.riskAmount || 100;
+        const stopDistance = Math.abs((t.entry || 0) - (t.stop || 0));
+        let moveDistance = (t.dir === 'Long' || t.type === 'Long') ? ((t.exit || 0) - (t.entry || 0)) : ((t.entry || 0) - (t.exit || 0));
+        const rMulti = t.rMulti !== undefined ? t.rMulti : (stopDistance > 0 ? (moveDistance / stopDistance) : 0);
+        const pnl = t.pnl !== undefined ? t.pnl : (rMulti * riskAmount);
+        
+        return {
+            id: t.id || (index + 1),
+            date: t.date ? t.date.split(',')[0] : new Date().toISOString().split('T')[0],
+            asset: t.asset || t.pair || 'XAUUSD',
+            dir: t.dir || t.type || 'Long',
+            model: t.model || 'Слом структуры по 4 точкам на М3-М5',
+            tf: t.tf || 'M3-M5',
+            riskAmount: riskAmount,
+            entry: t.entry || 0,
+            stop: t.stop || 0,
+            take: t.take || 0,
+            exit: t.exit || 0,
+            rMulti: rMulti,
+            pnl: pnl,
+            status: t.status || (rMulti > 0 ? 'WIN' : (rMulti < 0 ? 'LOSS' : 'BE')),
+            img1: t.img1 || null,
+            img2: t.img2 || null
+        };
+    });
+
+    localStorage.setItem('proTrades', JSON.stringify(trades));
+
+    let initialDeposit = parseFloat(localStorage.getItem('initialDeposit')) || 10000;
+    let chartInstance = null;
+    
+    let currentImg1 = null;
+    let currentImg2 = null;
+    let activeZoneId = 'pz1';
+    let currentViewingId = null;
+
+    document.getElementById('initialDepositInput').value = initialDeposit;
+    document.getElementById('t-date').valueAsDate = new Date();
+
+    function updateDeposit(val) {
+        initialDeposit = parseFloat(val) || 10000;
+        localStorage.setItem('initialDeposit', initialDeposit);
+        updateDashboard();
+    }
+
+    function openAddModal() { 
+        document.getElementById('t-edit-id').value = '';
+        document.getElementById('modalFormTitle').innerText = 'Новая сделка';
+        document.getElementById('submitFormBtn').innerText = 'Сохранить сделку';
+        document.getElementById('tradeForm').reset();
+
+        currentImg1 = null; currentImg2 = null;
+        resetZone('pz1', '📋 <b>График 1 (Контекст)</b><br>Нажмите Ctrl+V или кликните');
+        resetZone('pz2', '📋 <b>График 2 (Вход)</b><br>Нажмите Ctrl+V или кликните');
+        setActiveZone('pz1');
+        document.getElementById('t-date').valueAsDate = new Date();
+        document.getElementById('t-tf').value = 'M3-M5';
+        document.getElementById('t-risk').value = '100';
+
+        document.getElementById('addModal').style.display = 'flex'; 
+    }
+
+    function editCurrentTrade() {
+        if(!currentViewingId) return;
+        const t = trades.find(tr => tr.id === currentViewingId);
+        if(!t) return;
+
+        closeModals();
+
+        document.getElementById('t-edit-id').value = t.id;
+        document.getElementById('modalFormTitle').innerText = `Редактирование сделки №${t.id}`;
+        document.getElementById('submitFormBtn').innerText = 'Сохранить изменения';
+
+        document.getElementById('t-date').value = t.date;
+        document.getElementById('t-asset').value = t.asset;
+        document.getElementById('t-dir').value = t.dir;
+        document.getElementById('t-model').value = t.model;
+        document.getElementById('t-tf').value = t.tf;
+        document.getElementById('t-risk').value = t.riskAmount || 100;
+        document.getElementById('t-entry').value = t.entry;
+        document.getElementById('t-stop').value = t.stop;
+        document.getElementById('t-take').value = t.take;
+        document.getElementById('t-exit').value = t.exit;
+
+        currentImg1 = t.img1;
+        currentImg2 = t.img2;
+
+        if (t.img1) applyImageToZone('pz1', t.img1);
+        else resetZone('pz1', '📋 <b>График 1 (Контекст)</b><br>Нажмите Ctrl+V или кликните');
+
+        if (t.img2) applyImageToZone('pz2', t.img2);
+        else resetZone('pz2', '📋 <b>График 2 (Вход)</b><br>Нажмите Ctrl+V или кликните');
+
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function deleteCurrentTrade() {
+        if(!currentViewingId) return;
+        if(confirm(`Удалить сделку №${currentViewingId}?`)) {
+            trades = trades.filter(tr => tr.id !== currentViewingId);
+            localStorage.setItem('proTrades', JSON.stringify(trades));
+            closeModals();
+            updateDashboard();
+        }
+    }
+    
+    function closeModals() { 
+        document.getElementById('addModal').style.display = 'none'; 
+        document.getElementById('viewModal').style.display = 'none'; 
+    }
+
+    function openLightbox(src) {
+        if (!src) return;
+        const lightboxModal = document.getElementById('lightboxModal');
+        const lightboxImg = document.getElementById('lightboxImg');
+        lightboxImg.src = src;
+        lightboxModal.style.display = 'flex';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightboxModal').style.display = 'none';
+    }
+
+    function setActiveZone(zoneId) {
+        activeZoneId = zoneId;
+        document.getElementById('pz1').classList.remove('active-zone');
+        document.getElementById('pz2').classList.remove('active-zone');
+        document.getElementById(zoneId).classList.add('active-zone');
+    }
+
+    function resetZone(zoneId, htmlText) {
+        const zone = document.getElementById(zoneId);
+        const oldImg = zone.querySelector('img');
+        if (oldImg) oldImg.remove();
+        zone.innerHTML = htmlText + zone.querySelector('input').outerHTML;
+    }
+
+    function applyImageToZone(zoneId, base64Data) {
+        const zone = document.getElementById(zoneId);
+        if (zoneId === 'pz1') currentImg1 = base64Data;
+        if (zoneId === 'pz2') currentImg2 = base64Data;
+
+        let img = zone.querySelector('img');
+        if (!img) {
+            img = document.createElement('img');
+            zone.appendChild(img);
+        }
+        img.src = base64Data;
+    }
+
+    document.addEventListener('paste', function(e) {
+        if (document.getElementById('addModal').style.display !== 'flex') return;
+
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    applyImageToZone(activeZoneId, event.target.result);
+                    if (activeZoneId === 'pz1') setActiveZone('pz2');
+                };
+                reader.readAsDataURL(blob);
+                break;
+            }
+        }
+    });
+
+    document.getElementById('pz1').addEventListener('click', function(e) {
+        if(e.target.tagName !== 'INPUT') document.getElementById('f-img1').click();
+    });
+    document.getElementById('pz2').addEventListener('click', function(e) {
+        if(e.target.tagName !== 'INPUT') document.getElementById('f-img2').click();
+    });
+
+    function handleFileSelect(input, zoneId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                applyImageToZone(zoneId, e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    document.getElementById('tradeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const editId = document.getElementById('t-edit-id').value;
+        const date = document.getElementById('t-date').value;
+        const asset = document.getElementById('t-asset').value.toUpperCase();
+        const dir = document.getElementById('t-dir').value;
+        const model = document.getElementById('t-model').value;
+        const tf = document.getElementById('t-tf').value;
+        const riskAmount = parseFloat(document.getElementById('t-risk').value);
+        
+        const entry = parseFloat(document.getElementById('t-entry').value);
+        const stop = parseFloat(document.getElementById('t-stop').value);
+        const take = parseFloat(document.getElementById('t-take').value);
+        const exit = parseFloat(document.getElementById('t-exit').value);
+
+        const stopDistance = Math.abs(entry - stop);
+        let moveDistance = (dir === 'Long') ? (exit - entry) : (entry - exit);
+
+        const rMulti = stopDistance > 0 ? (moveDistance / stopDistance) : 0;
+        const pnl = rMulti * riskAmount;
+        const status = rMulti > 0 ? 'WIN' : (rMulti < 0 ? 'LOSS' : 'BE');
+
+        if (editId) {
+            const index = trades.findIndex(tr => tr.id === parseInt(editId));
+            if (index !== -1) {
+                trades[index] = {
+                    id: parseInt(editId), date, asset, dir, model, tf, riskAmount,
+                    entry, stop, take, exit, pnl, rMulti, status,
+                    img1: currentImg1, img2: currentImg2
+                };
+            }
+        } else {
+            const trade = {
+                id: trades.length + 1, date, asset, dir, model, tf, riskAmount,
+                entry, stop, take, exit, pnl, rMulti, status,
+                img1: currentImg1, img2: currentImg2
+            };
+            trades.push(trade);
+        }
+        
+        try {
+            localStorage.setItem('proTrades', JSON.stringify(trades));
+        } catch(err) {
+            alert("Ошибка: Превышен лимит памяти браузера! Используйте скриншоты с меньшим разрешением.");
+        }
+        
+        closeModals();
+        updateDashboard();
+    });
+
+    function viewTrade(id) {
+        const t = trades.find(tr => tr.id === id);
+        if (!t) return;
+
+        currentViewingId = id;
+
+        document.getElementById('v-title').innerHTML = `${t.asset} <span style="font-size: 16px;" class="${t.dir === 'Long' ? 'dir-long' : 'dir-short'}">${t.dir === 'Long' ? '↗ лонг' : '↘ шорт'}</span>`;
+        document.getElementById('v-date').innerText = `${t.date} • №${t.id}`;
+        
+        const resEl = document.getElementById('v-res');
+        resEl.innerText = t.status;
+        resEl.className = 'val ' + (t.status === 'WIN' ? 'win-text' : (t.status === 'LOSS' ? 'loss-text' : ''));
+        
+        const rEl = document.getElementById('v-r');
+        rEl.innerText = (t.rMulti > 0 ? '+' : '') + t.rMulti.toFixed(2) + 'R';
+        rEl.className = 'val ' + (t.rMulti > 0 ? 'win-text' : 'loss-text');
+
+        const pnlEl = document.getElementById('v-pnl');
+        pnlEl.innerText = (t.pnl > 0 ? '+' : '') + t.pnl.toFixed(2) + ' $';
+        pnlEl.className = 'val ' + (t.pnl > 0 ? 'win-text' : 'loss-text');
+
+        document.getElementById('v-model').innerText = t.model;
+        document.getElementById('v-tf').innerText = t.tf;
+        document.getElementById('v-risk').innerText = (t.riskAmount || 100) + ' $';
+        document.getElementById('v-entry').innerText = t.entry;
+        document.getElementById('v-stop').innerText = t.stop;
+        document.getElementById('v-take').innerText = t.take;
+        document.getElementById('v-exit').innerText = t.exit;
+
+        const img1Box = document.getElementById('v-img1-box');
+        const img2Box = document.getElementById('v-img2-box');
+
+        if (t.img1) {
+            img1Box.innerHTML = `<img src="${t.img1}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">`;
+            img1Box.onclick = function() { openLightbox(t.img1); };
+        } else {
+            img1Box.innerHTML = '📊 График 1';
+            img1Box.onclick = null;
+        }
+
+        if (t.img2) {
+            img2Box.innerHTML = `<img src="${t.img2}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">`;
+            img2Box.onclick = function() { openLightbox(t.img2); };
+        } else {
+            img2Box.innerHTML = '📈 График 2';
+            img2Box.onclick = null;
+        }
+
+        document.getElementById('viewModal').style.display = 'flex';
+    }
+
+    function updateDashboard() {
+        const tbody = document.getElementById('tradesTable');
+        tbody.innerHTML = '';
+
+        let totalPnl = 0, sumR = 0, wins = 0, losses = 0, sumRR = 0;
+        let chartLabels = ['Start'];
+        let chartData = [0];
+        let currentCurveR = 0;
+
+        const daysData = {
+            1: { name: 'Пн', r: 0, wins: 0, total: 0 },
+            2: { name: 'Вт', r: 0, wins: 0, total: 0 },
+            3: { name: 'Ср', r: 0, wins: 0, total: 0 },
+            4: { name: 'Чт', r: 0, wins: 0, total: 0 },
+            5: { name: 'Пт', r: 0, wins: 0, total: 0 }
+        };
+
+        trades.forEach((t) => {
+            totalPnl += t.pnl;
+            sumR += t.rMulti;
+            if (t.status === 'WIN') { wins++; sumRR += t.rMulti; }
+            if (t.status === 'LOSS') losses++;
+
+            if (t.date) {
+                const dayNum = new Date(t.date).getDay();
+                if (daysData[dayNum]) {
+                    daysData[dayNum].r += t.rMulti;
+                    daysData[dayNum].total += 1;
+                    if (t.status === 'WIN') daysData[dayNum].wins += 1;
+                }
+            }
+
+            currentCurveR += t.rMulti;
+            chartLabels.push(t.id);
+            chartData.push(currentCurveR);
+
+            const rClass = t.rMulti > 0 ? 'win-text' : (t.rMulti < 0 ? 'loss-text' : '');
+            const pnlClass = t.pnl > 0 ? 'win-text' : (t.pnl < 0 ? 'loss-text' : '');
+            
+            const tr = document.createElement('tr');
+            tr.onclick = () => viewTrade(t.id);
+            tr.innerHTML = `
+                <td>${t.id}</td>
+                <td>${t.date}</td>
+                <td style="font-weight:600">${t.asset}</td>
+                <td class="${t.dir === 'Long' ? 'dir-long' : 'dir-short'}">${t.dir === 'Long' ? '↗ лонг' : '↘ шорт'}</td>
+                <td>${t.model}</td>
+                <td class="${rClass}">${t.status}</td>
+                <td class="${rClass}">${t.rMulti > 0 ? '+' : ''}${t.rMulti.toFixed(2)}R</td>
+                <td class="${pnlClass}">${t.pnl > 0 ? '+' : ''}${t.pnl.toFixed(2)} $</td>
+            `;
+            tbody.prepend(tr);
+        });
+
+        const daysGrid = document.getElementById('daysGrid');
+        daysGrid.innerHTML = '';
+        Object.keys(daysData).forEach(dayKey => {
+            const d = daysData[dayKey];
+            const wr = d.total > 0 ? Math.round((d.wins / d.total) * 100) : 0;
+            const rSign = d.r > 0 ? '+' : '';
+            const rClass = d.r > 0 ? 'win-text' : (d.r < 0 ? 'loss-text' : '');
+
+            daysGrid.innerHTML += `
+                <div class="day-card">
+                    <div class="day-name">${d.name}</div>
+                    <div class="day-r ${rClass}">${rSign}${d.r.toFixed(2)}R</div>
+                    <div class="day-sub">${d.total} сдел. • ${wr}% WR</div>
+                </div>
+            `;
+        });
+
+        const total = trades.length;
+        document.getElementById('st-total').innerText = total;
+        document.getElementById('table-count').innerText = total;
+        
+        const pnlSign = totalPnl > 0 ? '+' : '';
+        const pctReturn = initialDeposit > 0 ? ((totalPnl / initialDeposit) * 100).toFixed(2) : '0.00';
+        
+        document.getElementById('st-total-pnl').innerText = `${pnlSign}${totalPnl.toFixed(2)} $ (${pnlSign}${pctReturn}%)`;
+        document.getElementById('st-total-pnl').className = 'stat-sub ' + (totalPnl >= 0 ? 'win-text' : 'loss-text');
+
+        document.getElementById('st-wins').innerText = wins;
+        document.getElementById('st-losses').innerText = losses;
+
+        const winrate = total > 0 ? Math.round((wins / total) * 100) : 0;
+        document.getElementById('st-winrate').innerHTML = `${winrate}%<span>винрейт</span>`;
+        document.getElementById('st-winrate-circle').style.setProperty('--win-deg', `${winrate * 3.6}deg`);
+
+        const rSign = sumR > 0 ? '+' : '';
+        const sumREl = document.getElementById('st-sum-r');
+        sumREl.innerText = `${rSign}${sumR.toFixed(2)}`;
+        sumREl.className = 'stat-value ' + (sumR >= 0 ? 'win-text' : 'loss-text');
+        
+        document.getElementById('chart-total-r').innerText = `${rSign}${sumR.toFixed(2)}R`;
+        document.getElementById('chart-total-r').className = 'btn ' + (sumR >= 0 ? 'win-text' : 'loss-text');
+
+        const avgRR = wins > 0 ? (sumRR / wins).toFixed(2) : '0.00';
+        document.getElementById('st-avg-rr').innerText = avgRR;
+
+        updateChart(chartLabels, chartData);
+    }
+
+    function updateChart(labels, data) {
+        const chartCanvas = document.getElementById('pnlChart');
+        if (!chartCanvas) return;
+        
+        if (typeof Chart === 'undefined') {
+            console.warn("Chart.js не загружен.");
+            return;
+        }
+
+        const ctx = chartCanvas.getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Кривая R',
+                    data: data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    fill: true,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { grid: { color: '#f1f5f9' }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    function clearData() {
+        if(confirm('Удалить все данные?')) {
+            trades = [];
+            localStorage.setItem('proTrades', JSON.stringify(trades));
+            updateDashboard();
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className === 'modal-overlay') closeModals();
+    }
+
+    updateDashboard();
+</script>
+
+</body>
+</html>
