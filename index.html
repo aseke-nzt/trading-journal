@@ -254,12 +254,13 @@
 
 </div>
 
-<!-- Модальное окно добавления -->
+<!-- Модальное окно добавления / редактирования -->
 <div class="modal-overlay" id="addModal">
     <div class="modal">
         <button class="close-btn" onclick="closeModals()">✕</button>
-        <h2 style="margin-top: 0;">Новая сделка</h2>
+        <h2 style="margin-top: 0;" id="modalFormTitle">Новая сделка</h2>
         <form id="tradeForm">
+            <input type="hidden" id="t-edit-id" value="">
             <div class="form-grid">
                 <div class="form-group"><label>Дата</label><input type="date" id="t-date" required></div>
                 <div class="form-group"><label>Инструмент (Forex)</label>
@@ -312,7 +313,7 @@
                 </div>
 
                 <div class="form-group form-full">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">Сохранить сделку</button>
+                    <button type="submit" id="submitFormBtn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">Сохранить сделку</button>
                 </div>
             </div>
         </form>
@@ -326,7 +327,10 @@
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
             <div style="font-size: 24px; font-weight: 700; color: var(--text-main);" id="v-title">GOLD <span style="font-size: 16px;" id="v-dir">↗ лонг</span></div>
-            <div style="color: var(--text-muted); font-size: 14px;" id="v-date">2026-01-05 • №1</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="color: var(--text-muted); font-size: 14px;" id="v-date">2026-01-05 • №1</span>
+                <button class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="editCurrentTrade()">✎ Редактировать</button>
+            </div>
         </div>
 
         <div class="view-grid">
@@ -359,10 +363,8 @@
 </div>
 
 <script>
-    // Проверка совпадения ключей и миграция старых сделок
     let rawTrades = JSON.parse(localStorage.getItem('proTrades')) || JSON.parse(localStorage.getItem('trades')) || [];
     
-    // Миграция данных: гарантируем, что у каждой сделки есть новые поля
     let trades = rawTrades.map((t, index) => {
         const riskAmount = t.riskAmount || 100;
         const stopDistance = Math.abs((t.entry || 0) - (t.stop || 0));
@@ -390,7 +392,6 @@
         };
     });
 
-    // Пересохраняем мигрированные данные в единый ключ
     localStorage.setItem('proTrades', JSON.stringify(trades));
 
     let initialDeposit = parseFloat(localStorage.getItem('initialDeposit')) || 10000;
@@ -399,6 +400,7 @@
     let currentImg1 = null;
     let currentImg2 = null;
     let activeZoneId = 'pz1';
+    let currentViewingId = null;
 
     document.getElementById('initialDepositInput').value = initialDeposit;
     document.getElementById('t-date').valueAsDate = new Date();
@@ -410,11 +412,54 @@
     }
 
     function openAddModal() { 
+        document.getElementById('t-edit-id').value = '';
+        document.getElementById('modalFormTitle').innerText = 'Новая сделка';
+        document.getElementById('submitFormBtn').innerText = 'Сохранить сделку';
+        document.getElementById('tradeForm').reset();
+
         currentImg1 = null; currentImg2 = null;
         resetZone('pz1', '📋 <b>График 1 (Контекст)</b><br>Нажмите Ctrl+V или кликните');
         resetZone('pz2', '📋 <b>График 2 (Вход)</b><br>Нажмите Ctrl+V или кликните');
         setActiveZone('pz1');
+        document.getElementById('t-date').valueAsDate = new Date();
+        document.getElementById('t-tf').value = 'M3-M5';
+        document.getElementById('t-risk').value = '100';
+
         document.getElementById('addModal').style.display = 'flex'; 
+    }
+
+    function editCurrentTrade() {
+        if(!currentViewingId) return;
+        const t = trades.find(tr => tr.id === currentViewingId);
+        if(!t) return;
+
+        closeModals();
+
+        document.getElementById('t-edit-id').value = t.id;
+        document.getElementById('modalFormTitle').innerText = `Редактирование сделки №${t.id}`;
+        document.getElementById('submitFormBtn').innerText = 'Сохранить изменения';
+
+        document.getElementById('t-date').value = t.date;
+        document.getElementById('t-asset').value = t.asset;
+        document.getElementById('t-dir').value = t.dir;
+        document.getElementById('t-model').value = t.model;
+        document.getElementById('t-tf').value = t.tf;
+        document.getElementById('t-risk').value = t.riskAmount || 100;
+        document.getElementById('t-entry').value = t.entry;
+        document.getElementById('t-stop').value = t.stop;
+        document.getElementById('t-take').value = t.take;
+        document.getElementById('t-exit').value = t.exit;
+
+        currentImg1 = t.img1;
+        currentImg2 = t.img2;
+
+        if (t.img1) applyImageToZone('pz1', t.img1);
+        else resetZone('pz1', '📋 <b>График 1 (Контекст)</b><br>Нажмите Ctrl+V или кликните');
+
+        if (t.img2) applyImageToZone('pz2', t.img2);
+        else resetZone('pz2', '📋 <b>График 2 (Вход)</b><br>Нажмите Ctrl+V или кликните');
+
+        document.getElementById('addModal').style.display = 'flex';
     }
     
     function closeModals() { 
@@ -485,10 +530,11 @@
         }
     }
 
-    // Сохранение сделки
+    // Сохранение или Редактирование сделки
     document.getElementById('tradeForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
+        const editId = document.getElementById('t-edit-id').value;
         const date = document.getElementById('t-date').value;
         const asset = document.getElementById('t-asset').value.toUpperCase();
         const dir = document.getElementById('t-dir').value;
@@ -508,13 +554,25 @@
         const pnl = rMulti * riskAmount;
         const status = rMulti > 0 ? 'WIN' : (rMulti < 0 ? 'LOSS' : 'BE');
 
-        const trade = {
-            id: trades.length + 1, date, asset, dir, model, tf, riskAmount,
-            entry, stop, take, exit, pnl, rMulti, status,
-            img1: currentImg1, img2: currentImg2
-        };
-
-        trades.push(trade);
+        if (editId) {
+            // Редактируем существующую сделку
+            const index = trades.findIndex(tr => tr.id === parseInt(editId));
+            if (index !== -1) {
+                trades[index] = {
+                    id: parseInt(editId), date, asset, dir, model, tf, riskAmount,
+                    entry, stop, take, exit, pnl, rMulti, status,
+                    img1: currentImg1, img2: currentImg2
+                };
+            }
+        } else {
+            // Добавляем новую сделку
+            const trade = {
+                id: trades.length + 1, date, asset, dir, model, tf, riskAmount,
+                entry, stop, take, exit, pnl, rMulti, status,
+                img1: currentImg1, img2: currentImg2
+            };
+            trades.push(trade);
+        }
         
         try {
             localStorage.setItem('proTrades', JSON.stringify(trades));
@@ -523,16 +581,14 @@
         }
         
         closeModals();
-        document.getElementById('tradeForm').reset();
-        document.getElementById('t-date').valueAsDate = new Date();
-        document.getElementById('t-tf').value = 'M3-M5';
-        document.getElementById('t-risk').value = '100';
         updateDashboard();
     });
 
     function viewTrade(id) {
         const t = trades.find(tr => tr.id === id);
         if(!t) return;
+
+        currentViewingId = id;
 
         document.getElementById('v-title').innerHTML = `${t.asset} <span style="font-size: 16px;" class="${t.dir === 'Long' ? 'dir-long' : 'dir-short'}">${t.dir === 'Long' ? '↗ лонг' : '↘ шорт'}</span>`;
         document.getElementById('v-date').innerText = `${t.date} • №${t.id}`;
