@@ -272,11 +272,8 @@
                 </div>
             </div>
             <div class="filter-group" style="margin-bottom: 0;">
-                <div class="filter-group-name">Модель входа</div>
-                <div class="tags">
-                    <div class="tag" onclick="toggleFilterTag(this, 'model', 'Слом структуры по 4 точкам на М3-М5')">Слом структуры по 4 точкам на М3-М5</div>
-                    <div class="tag" onclick="toggleFilterTag(this, 'model', 'ТП на М3-М5')">ТП на М3-М5</div>
-                </div>
+                <div class="filter-group-name">План входа</div>
+                <div class="tags" id="modelFilterTags"></div>
             </div>
         </div>
     </div>
@@ -294,7 +291,7 @@
                     <th>Дата</th>
                     <th>Актив</th>
                     <th>Напр.</th>
-                    <th>Модель</th>
+                    <th>План входа</th>
                     <th>Итог</th>
                     <th>R (RR)</th>
                     <th>Профит ($)</th>
@@ -347,14 +344,11 @@
                 <div class="form-group"><label>Направление</label>
                     <select id="t-dir"><option value="Long">Лонг ↗</option><option value="Short">Шорт ↘</option></select>
                 </div>
-                <div class="form-group"><label>Модель входа</label>
-                    <select id="t-model" required>
-                        <option value="Слом структуры по 4 точкам на М3-М5">Слом структуры по 4 точкам на М3-М5</option>
-                        <option value="ТП на М3-М5">ТП на М3-М5</option>
-                    </select>
+                <div class="form-group"><label>План входа</label>
+                    <input type="text" id="t-model" placeholder="Например: Слом структуры на М5" required>
                 </div>
                 <div class="form-group"><label>Таймфрейм</label><input type="text" id="t-tf" value="M3-M5" required></div>
-                <div class="form-group"><label>Риск на сделку ($)</label><input type="number" id="t-risk" step="any" placeholder="100" value="100" required></div>
+                <div class="form-group"><label>Риск на сделку (%)</label><input type="number" id="t-risk-pct" step="any" placeholder="1" value="1" required></div>
                 
                 <div class="form-group"><label>Цена Входа</label><input type="number" id="t-entry" step="any" required></div>
                 <div class="form-group"><label>Цена Стопа</label><input type="number" id="t-stop" step="any" required></div>
@@ -408,9 +402,9 @@
             </div>
             <div class="vg-col">
                 <h4>Сделка</h4>
-                <div class="info-card"><label>Модель</label><div class="val" id="v-model" style="font-size: 12px;">Слом структуры...</div></div>
+                <div class="info-card"><label>План входа</label><div class="val" id="v-model" style="font-size: 12px;">Слом структуры...</div></div>
                 <div class="info-card"><label>Таймфрейм</label><div class="val" id="v-tf">M3-M5</div></div>
-                <div class="info-card"><label>Риск</label><div class="val" id="v-risk">100 $</div></div>
+                <div class="info-card"><label>Риск (%)</label><div class="val" id="v-risk">1 %</div></div>
             </div>
             <div class="vg-col">
                 <h4>Котировки</h4>
@@ -434,9 +428,12 @@
 
 <script>
     let rawTrades = JSON.parse(localStorage.getItem('proTrades')) || JSON.parse(localStorage.getItem('trades')) || [];
+    let initialDeposit = parseFloat(localStorage.getItem('initialDeposit')) || 10000;
     
     let trades = rawTrades.map((t, index) => {
-        const riskAmount = t.riskAmount || 100;
+        const riskPct = t.riskPct !== undefined ? t.riskPct : (t.riskAmount ? ((t.riskAmount / initialDeposit) * 100) : 1);
+        const riskAmount = (initialDeposit * riskPct) / 100;
+        
         const stopDistance = Math.abs((t.entry || 0) - (t.stop || 0));
         let moveDistance = (t.dir === 'Long' || t.type === 'Long') ? ((t.exit || 0) - (t.entry || 0)) : ((t.entry || 0) - (t.exit || 0));
         const rMulti = t.rMulti !== undefined ? t.rMulti : (stopDistance > 0 ? (moveDistance / stopDistance) : 0);
@@ -447,8 +444,9 @@
             date: t.date ? t.date.split(',')[0] : new Date().toISOString().split('T')[0],
             asset: t.asset || t.pair || 'XAUUSD',
             dir: t.dir || t.type || 'Long',
-            model: t.model || 'Слом структуры по 4 точкам на М3-М5',
+            model: t.model || t.plan || 'Вход по тренду',
             tf: t.tf || 'M3-M5',
+            riskPct: riskPct,
             riskAmount: riskAmount,
             entry: t.entry || 0,
             stop: t.stop || 0,
@@ -464,7 +462,6 @@
 
     localStorage.setItem('proTrades', JSON.stringify(trades));
 
-    let initialDeposit = parseFloat(localStorage.getItem('initialDeposit')) || 10000;
     let chartInstance = null;
     let currentCalDate = new Date();
     let selectedTimeframe = 'ALL';
@@ -508,6 +505,22 @@
             el.classList.add('active');
         }
         updateDashboard();
+    }
+
+    function renderModelFilterTags() {
+        const container = document.getElementById('modelFilterTags');
+        container.innerHTML = '';
+        
+        const models = [...new Set(trades.map(t => t.model).filter(Boolean))];
+        if (models.length === 0) {
+            container.innerHTML = '<span style="font-size:11px; color:var(--text-muted)">Нет сохраненных планов</span>';
+            return;
+        }
+
+        models.forEach(m => {
+            const activeClass = activeFilters.model === m ? 'active' : '';
+            container.innerHTML += `<div class="tag ${activeClass}" onclick="toggleFilterTag(this, 'model', '${m}')">${m}</div>`;
+        });
     }
 
     /* Выбор периода для графика */
@@ -640,7 +653,7 @@
         setActiveZone('pz1');
         document.getElementById('t-date').valueAsDate = new Date();
         document.getElementById('t-tf').value = 'M3-M5';
-        document.getElementById('t-risk').value = '100';
+        document.getElementById('t-risk-pct').value = '1';
 
         document.getElementById('addModal').style.display = 'flex'; 
     }
@@ -661,7 +674,7 @@
         document.getElementById('t-dir').value = t.dir;
         document.getElementById('t-model').value = t.model;
         document.getElementById('t-tf').value = t.tf;
-        document.getElementById('t-risk').value = t.riskAmount || 100;
+        document.getElementById('t-risk-pct').value = t.riskPct || 1;
         document.getElementById('t-entry').value = t.entry;
         document.getElementById('t-stop').value = t.stop;
         document.getElementById('t-take').value = t.take;
@@ -767,9 +780,10 @@
         const date = document.getElementById('t-date').value;
         const asset = document.getElementById('t-asset').value;
         const dir = document.getElementById('t-dir').value;
-        const model = document.getElementById('t-model').value;
+        const model = document.getElementById('t-model').value.trim();
         const tf = document.getElementById('t-tf').value;
-        const riskAmount = parseFloat(document.getElementById('t-risk').value);
+        const riskPct = parseFloat(document.getElementById('t-risk-pct').value);
+        const riskAmount = (initialDeposit * riskPct) / 100;
         
         const entry = parseFloat(document.getElementById('t-entry').value);
         const stop = parseFloat(document.getElementById('t-stop').value);
@@ -787,14 +801,14 @@
             const index = trades.findIndex(tr => tr.id === parseInt(editId));
             if (index !== -1) {
                 trades[index] = {
-                    id: parseInt(editId), date, asset, dir, model, tf, riskAmount,
+                    id: parseInt(editId), date, asset, dir, model, tf, riskPct, riskAmount,
                     entry, stop, take, exit, pnl, rMulti, status,
                     img1: currentImg1, img2: currentImg2
                 };
             }
         } else {
             const trade = {
-                id: trades.length + 1, date, asset, dir, model, tf, riskAmount,
+                id: trades.length + 1, date, asset, dir, model, tf, riskPct, riskAmount,
                 entry, stop, take, exit, pnl, rMulti, status,
                 img1: currentImg1, img2: currentImg2
             };
@@ -834,7 +848,7 @@
 
         document.getElementById('v-model').innerText = t.model;
         document.getElementById('v-tf').innerText = t.tf;
-        document.getElementById('v-risk').innerText = (t.riskAmount || 100) + ' $';
+        document.getElementById('v-risk').innerText = (t.riskPct || 1) + ' %';
         document.getElementById('v-entry').innerText = t.entry;
         document.getElementById('v-stop').innerText = t.stop;
         document.getElementById('v-take').innerText = t.take;
@@ -863,6 +877,8 @@
     }
 
     function updateDashboard() {
+        renderModelFilterTags();
+
         const tbody = document.getElementById('tradesTable');
         tbody.innerHTML = '';
 
@@ -926,7 +942,7 @@
         updateChartDataByTimeframe(filteredTrades);
     }
 
-    /* Фильтрация данных для графика по выпадающему таймфрейму (1Н, 1М, 1К, 6М, 1Г, Все) */
+    /* Фильтрация данных для графика по выпадающему таймфрейму */
     function updateChartDataByTimeframe(allTrades) {
         let chartTrades = [...allTrades].sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date();
