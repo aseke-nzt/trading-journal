@@ -20,15 +20,17 @@
             --radius: 12px;
         }
 
+        * { box-sizing: border-box; }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
-            padding: 24px;
+            padding: 16px;
         }
 
-        .container { max-width: 1300px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .container { max-width: 1300px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
         .card {
             background-color: var(--bg-card);
@@ -39,9 +41,10 @@
         }
 
         /* Шапка */
-        .header { display: flex; justify-content: space-between; align-items: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
         .header-left { display: flex; align-items: center; gap: 12px; }
         .header-title h1 { margin: 0; font-size: 20px; font-weight: 700; }
+        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; width: 100%; justify-content: space-between; }
         
         .deposit-box {
             display: flex; flex-direction: column; align-items: flex-end; background: #f1f5f9;
@@ -55,7 +58,7 @@
 
         .btn {
             background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color);
-            padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 12px; cursor: pointer; transition: 0.2s;
+            padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 12px; cursor: pointer; transition: 0.2s; white-space: nowrap;
         }
         .btn:hover { background: #e2e8f0; }
         .btn.active { background: var(--accent); color: white; border-color: var(--accent); font-weight: 600; }
@@ -72,24 +75,24 @@
         .stat-sub { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
 
         /* КАЛЕНДАРЬ */
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
         .cal-controls { display: flex; align-items: center; gap: 8px; }
-        .cal-title { font-size: 16px; font-weight: 700; margin: 0 8px; min-width: 140px; text-align: center; }
+        .cal-title { font-size: 16px; font-weight: 700; margin: 0 4px; min-width: 130px; text-align: center; }
 
         .cal-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
         
         .calendar-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
         .cal-day {
-            background: #fff; border: 1px solid var(--border-color); border-radius: 8px; height: 80px; padding: 6px;
-            display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; position: relative;
+            background: #fff; border: 1px solid var(--border-color); border-radius: 8px; height: 75px; padding: 4px;
+            display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; position: relative; overflow: hidden;
         }
         .cal-day.other-month { background: #f8fafc; opacity: 0.4; }
         .cal-day .day-num { font-weight: 600; color: var(--text-muted); }
         .cal-day .day-info { text-align: right; }
-        .cal-day .day-trades { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
-        .cal-day .day-pnl { font-size: 12px; font-weight: 700; margin-top: 2px; }
+        .cal-day .day-trades { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+        .cal-day .day-pnl { font-size: 11px; font-weight: 700; margin-top: 2px; }
 
         /* Недельная сводка */
         .weekly-summary { display: flex; flex-direction: column; gap: 10px; }
@@ -99,8 +102,9 @@
         .week-stats { display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; }
 
         /* Таблица сделок */
-        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; flex-wrap: wrap; gap: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
         th { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
         tr { cursor: pointer; transition: background 0.2s; }
@@ -118,19 +122,18 @@
         .tag { padding: 4px 12px; border: 1px solid var(--border-color); border-radius: 16px; font-size: 12px; color: var(--text-main); cursor: pointer; user-select: none; }
         .tag:hover, .tag.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); font-weight: 600; }
 
-        /* Переключатель периода графика */
-        .timeframe-selector { display: flex; gap: 4px; background: #f1f5f9; padding: 3px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .timeframe-selector { display: flex; gap: 4px; background: #f1f5f9; padding: 3px; border-radius: 8px; border: 1px solid var(--border-color); flex-wrap: wrap; }
 
         /* Модальные окна */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 12px;
         }
         .modal {
-            background: var(--bg-card); width: 100%; max-width: 680px; border-radius: var(--radius); padding: 24px;
+            background: var(--bg-card); width: 100%; max-width: 680px; border-radius: var(--radius); padding: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; position: relative;
         }
-        .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); z-index: 10; }
+        .close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); z-index: 10; }
         
         .view-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
         .vg-col h4 { font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px 0; }
@@ -158,6 +161,32 @@
         .form-group label { font-size: 11px; color: var(--text-muted); font-weight: 600;}
         .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; }
         .form-full { grid-column: span 2; }
+
+        .partial-box { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 4px; }
+
+        /* ================= АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ ================= */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { gap: 14px; }
+            .card { padding: 14px; }
+            
+            .header-actions { flex-direction: column; align-items: stretch; gap: 8px; }
+            .deposit-box { align-items: center; }
+
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stats-grid .stat-card:last-child { grid-column: span 2; }
+
+            .cal-layout { grid-template-columns: 1fr; gap: 16px; }
+            .cal-day { height: 60px; padding: 2px; font-size: 9px; }
+            .cal-day .day-trades { font-size: 8px; }
+            .cal-day .day-pnl { font-size: 9px; }
+
+            .form-grid { grid-template-columns: 1fr; }
+            .form-full { grid-column: span 1; }
+
+            .view-grid { grid-template-columns: 1fr; gap: 10px; }
+            .images-section-modal { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -172,13 +201,15 @@
                 <h1>Торговый журнал</h1>
             </div>
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
+        <div class="header-actions">
             <div class="deposit-box">
                 <label>Старт. Депозит ($)</label>
                 <input type="number" id="initialDepositInput" value="10000" onchange="updateDeposit(this.value)">
             </div>
-            <button class="btn" onclick="clearData()">Очистить данные</button>
-            <button class="btn btn-primary" onclick="openAddModal()">+ Добавить сделку</button>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn" onclick="clearData()">Очистить</button>
+                <button class="btn btn-primary" onclick="openAddModal()">+ Добавить</button>
+            </div>
         </div>
     </div>
 
@@ -238,7 +269,7 @@
     <!-- График Баланса с выбором периода -->
     <div class="card">
         <div class="table-header">
-            <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <span>Account Balance</span>
                 <div class="timeframe-selector">
                     <button class="btn" onclick="setChartTimeframe('1W', this)">1Н</button>
@@ -251,7 +282,7 @@
             </div>
             <span class="btn" id="chart-total-r">+0.00R</span>
         </div>
-        <div style="height: 280px; width: 100%;">
+        <div style="height: 250px; width: 100%;">
             <canvas id="pnlChart"></canvas>
         </div>
     </div>
@@ -284,21 +315,23 @@
             <span>Сделки</span>
             <span id="table-count" style="color: var(--text-muted); font-size: 13px;">0</span>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Дата</th>
-                    <th>Актив</th>
-                    <th>Напр.</th>
-                    <th>План входа</th>
-                    <th>Итог</th>
-                    <th>R (RR)</th>
-                    <th>Профит ($)</th>
-                </tr>
-            </thead>
-            <tbody id="tradesTable"></tbody>
-        </table>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Дата</th>
+                        <th>Актив</th>
+                        <th>Напр.</th>
+                        <th>План входа</th>
+                        <th>Итог</th>
+                        <th>R (RR)</th>
+                        <th>Профит ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="tradesTable"></tbody>
+            </table>
+        </div>
     </div>
 
 </div>
@@ -352,18 +385,37 @@
                 
                 <div class="form-group"><label>Цена Входа</label><input type="number" id="t-entry" step="any" required></div>
                 <div class="form-group"><label>Цена Стопа</label><input type="number" id="t-stop" step="any" required></div>
-                <div class="form-group"><label>Цена Тейка</label><input type="number" id="t-take" step="any" required></div>
-                <div class="form-group"><label>Цена Выхода (Фактическая)</label><input type="number" id="t-exit" step="any" required></div>
+                <div class="form-group"><label>Цена Тейка (Цель)</label><input type="number" id="t-take" step="any" required></div>
+                <div class="form-group"><label>Финальная цена выхода</label><input type="number" id="t-exit" step="any" required></div>
                 
+                <!-- Частичная фиксация -->
                 <div class="form-group form-full">
-                    <label>Скриншоты (Кликните по рамке и нажмите Ctrl+V)</label>
+                    <label style="cursor: pointer; color: var(--accent);" onclick="togglePartialInputs()">
+                        ⚡ + Добавить частичную фиксацию (TP1)
+                    </label>
+                    <div class="partial-box" id="partialBox" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="form-group">
+                                <label>Цена TP1</label>
+                                <input type="number" id="t-p1-price" step="any" placeholder="Цена TP1">
+                            </div>
+                            <div class="form-group">
+                                <label>Объём TP1 (%)</label>
+                                <input type="number" id="t-p1-pct" step="any" placeholder="например, 50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group form-full">
+                    <label>Скриншоты (Кликните или выберите файл)</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="paste-zone active-zone" id="pz1" tabindex="0" onclick="setActiveZone('pz1')">
-                            📋 <b>График 1 (Контекст)</b><br>Ctrl+V или клик
+                            📋 <b>График 1</b><br>Ctrl+V или клик
                             <input type="file" id="f-img1" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'pz1')">
                         </div>
                         <div class="paste-zone" id="pz2" tabindex="0" onclick="setActiveZone('pz2')">
-                            📋 <b>График 2 (Вход)</b><br>Ctrl+V или клик
+                            📋 <b>График 2</b><br>Ctrl+V или клик
                             <input type="file" id="f-img2" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'pz2')">
                         </div>
                     </div>
@@ -410,14 +462,15 @@
                 <h4>Котировки</h4>
                 <div class="info-card"><label>Вход</label><div class="val" id="v-entry">4414.48</div></div>
                 <div class="info-card"><label>Стоп</label><div class="val" id="v-stop">4396.66</div></div>
-                <div class="info-card"><label>Тейк</label><div class="val" id="v-take">4439.99</div></div>
-                <div class="info-card"><label>Выход</label><div class="val" id="v-exit">4439.99</div></div>
+                <div class="info-card"><label>Выход (Финальный)</label><div class="val" id="v-exit">4439.99</div></div>
             </div>
         </div>
+
+        <div id="v-partials-detail" style="margin-top: 10px;"></div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
-            <div class="paste-zone" id="v-img1-box" style="height: 150px; cursor: pointer;">📊 График 1</div>
-            <div class="paste-zone" id="v-img2-box" style="height: 150px; cursor: pointer;">📈 График 2</div>
+        <div class="images-section-modal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+            <div class="paste-zone" id="v-img1-box" style="height: 140px; cursor: pointer;">📊 График 1</div>
+            <div class="paste-zone" id="v-img2-box" style="height: 140px; cursor: pointer;">📈 График 2</div>
         </div>
     </div>
 </div>
@@ -435,8 +488,21 @@
         const riskAmount = (initialDeposit * riskPct) / 100;
         
         const stopDistance = Math.abs((t.entry || 0) - (t.stop || 0));
-        let moveDistance = (t.dir === 'Long' || t.type === 'Long') ? ((t.exit || 0) - (t.entry || 0)) : ((t.entry || 0) - (t.exit || 0));
-        const rMulti = t.rMulti !== undefined ? t.rMulti : (stopDistance > 0 ? (moveDistance / stopDistance) : 0);
+        let p1Price = t.p1Price ? parseFloat(t.p1Price) : null;
+        let p1Pct = t.p1Pct ? parseFloat(t.p1Pct) : 0;
+        
+        let rMulti = 0;
+        if (stopDistance > 0) {
+            if (p1Price && p1Pct > 0 && p1Pct < 100) {
+                let move1 = (t.dir === 'Long') ? (p1Price - t.entry) : (t.entry - p1Price);
+                let moveFinal = (t.dir === 'Long') ? (t.exit - t.entry) : (t.entry - t.exit);
+                rMulti = ((move1 / stopDistance) * (p1Pct / 100)) + ((moveFinal / stopDistance) * ((100 - p1Pct) / 100));
+            } else {
+                let moveDistance = (t.dir === 'Long') ? ((t.exit || 0) - (t.entry || 0)) : ((t.entry || 0) - (t.exit || 0));
+                rMulti = moveDistance / stopDistance;
+            }
+        }
+        
         const pnl = t.pnl !== undefined ? t.pnl : (rMulti * riskAmount);
         
         return {
@@ -452,6 +518,8 @@
             stop: t.stop || 0,
             take: t.take || 0,
             exit: t.exit || 0,
+            p1Price: p1Price,
+            p1Pct: p1Pct,
             rMulti: rMulti,
             pnl: pnl,
             status: t.status || (rMulti > 0 ? 'WIN' : (rMulti < 0 ? 'LOSS' : 'BE')),
@@ -480,6 +548,11 @@
         initialDeposit = parseFloat(val) || 10000;
         localStorage.setItem('initialDeposit', initialDeposit);
         updateDashboard();
+    }
+
+    function togglePartialInputs() {
+        const box = document.getElementById('partialBox');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
     }
 
     function toggleFilters() {
@@ -523,7 +596,6 @@
         });
     }
 
-    /* Выбор периода для графика */
     function setChartTimeframe(tf, btnEl) {
         selectedTimeframe = tf;
         const buttons = btnEl.parentElement.querySelectorAll('.btn');
@@ -532,7 +604,6 @@
         updateDashboard();
     }
 
-    /* Логика Календаря */
     function prevMonth() { currentCalDate.setMonth(currentCalDate.getMonth() - 1); renderCalendar(); }
     function nextMonth() { currentCalDate.setMonth(currentCalDate.getMonth() + 1); renderCalendar(); }
     function todayMonth() { currentCalDate = new Date(); renderCalendar(); }
@@ -646,10 +717,11 @@
         document.getElementById('modalFormTitle').innerText = 'Новая сделка';
         document.getElementById('submitFormBtn').innerText = 'Сохранить сделку';
         document.getElementById('tradeForm').reset();
+        document.getElementById('partialBox').style.display = 'none';
 
         currentImg1 = null; currentImg2 = null;
-        resetZone('pz1', '📋 <b>График 1 (Контекст)</b><br>Ctrl+V или клик');
-        resetZone('pz2', '📋 <b>График 2 (Вход)</b><br>Ctrl+V или клик');
+        resetZone('pz1', '📋 <b>График 1</b><br>Ctrl+V или клик');
+        resetZone('pz2', '📋 <b>График 2</b><br>Ctrl+V или клик');
         setActiveZone('pz1');
         document.getElementById('t-date').valueAsDate = new Date();
         document.getElementById('t-tf').value = 'M3-M5';
@@ -680,14 +752,22 @@
         document.getElementById('t-take').value = t.take;
         document.getElementById('t-exit').value = t.exit;
 
+        if (t.p1Price) {
+            document.getElementById('partialBox').style.display = 'block';
+            document.getElementById('t-p1-price').value = t.p1Price;
+            document.getElementById('t-p1-pct').value = t.p1Pct;
+        } else {
+            document.getElementById('partialBox').style.display = 'none';
+        }
+
         currentImg1 = t.img1;
         currentImg2 = t.img2;
 
         if (t.img1) applyImageToZone('pz1', t.img1);
-        else resetZone('pz1', '📋 <b>График 1 (Контекст)</b><br>Ctrl+V или клик');
+        else resetZone('pz1', '📋 <b>График 1</b><br>Ctrl+V или клик');
 
         if (t.img2) applyImageToZone('pz2', t.img2);
-        else resetZone('pz2', '📋 <b>График 2 (Вход)</b><br>Ctrl+V или клик');
+        else resetZone('pz2', '📋 <b>График 2</b><br>Ctrl+V или клик');
 
         document.getElementById('addModal').style.display = 'flex';
     }
@@ -790,35 +870,44 @@
         const take = parseFloat(document.getElementById('t-take').value);
         const exit = parseFloat(document.getElementById('t-exit').value);
 
-        const stopDistance = Math.abs(entry - stop);
-        let moveDistance = (dir === 'Long') ? (exit - entry) : (entry - exit);
+        const p1Price = document.getElementById('t-p1-price').value ? parseFloat(document.getElementById('t-p1-price').value) : null;
+        const p1Pct = document.getElementById('t-p1-pct').value ? parseFloat(document.getElementById('t-p1-pct').value) : 0;
 
-        const rMulti = stopDistance > 0 ? (moveDistance / stopDistance) : 0;
+        const stopDistance = Math.abs(entry - stop);
+        let rMulti = 0;
+
+        if (stopDistance > 0) {
+            if (p1Price && p1Pct > 0 && p1Pct < 100) {
+                let move1 = (dir === 'Long') ? (p1Price - entry) : (entry - p1Price);
+                let moveFinal = (dir === 'Long') ? (exit - entry) : (entry - exit);
+                rMulti = ((move1 / stopDistance) * (p1Pct / 100)) + ((moveFinal / stopDistance) * ((100 - p1Pct) / 100));
+            } else {
+                let moveDistance = (dir === 'Long') ? (exit - entry) : (entry - exit);
+                rMulti = moveDistance / stopDistance;
+            }
+        }
+
         const pnl = rMulti * riskAmount;
         const status = rMulti > 0 ? 'WIN' : (rMulti < 0 ? 'LOSS' : 'BE');
 
+        const tradeObj = {
+            id: editId ? parseInt(editId) : trades.length + 1,
+            date, asset, dir, model, tf, riskPct, riskAmount,
+            entry, stop, take, exit, p1Price, p1Pct, pnl, rMulti, status,
+            img1: currentImg1, img2: currentImg2
+        };
+
         if (editId) {
             const index = trades.findIndex(tr => tr.id === parseInt(editId));
-            if (index !== -1) {
-                trades[index] = {
-                    id: parseInt(editId), date, asset, dir, model, tf, riskPct, riskAmount,
-                    entry, stop, take, exit, pnl, rMulti, status,
-                    img1: currentImg1, img2: currentImg2
-                };
-            }
+            if (index !== -1) trades[index] = tradeObj;
         } else {
-            const trade = {
-                id: trades.length + 1, date, asset, dir, model, tf, riskPct, riskAmount,
-                entry, stop, take, exit, pnl, rMulti, status,
-                img1: currentImg1, img2: currentImg2
-            };
-            trades.push(trade);
+            trades.push(tradeObj);
         }
         
         try {
             localStorage.setItem('proTrades', JSON.stringify(trades));
         } catch(err) {
-            alert("Ошибка: Превышен лимит памяти браузера! Используйте скриншоты с меньшим разрешением.");
+            alert("Ошибка: Превышен лимит памяти браузера!");
         }
         
         closeModals();
@@ -851,8 +940,21 @@
         document.getElementById('v-risk').innerText = (t.riskPct || 1) + ' %';
         document.getElementById('v-entry').innerText = t.entry;
         document.getElementById('v-stop').innerText = t.stop;
-        document.getElementById('v-take').innerText = t.take;
         document.getElementById('v-exit').innerText = t.exit;
+
+        const partialsDetail = document.getElementById('v-partials-detail');
+        if (t.p1Price && t.p1Pct > 0) {
+            partialsDetail.innerHTML = `
+                <div class="info-card" style="background:#eff6ff; border:1px solid #bfdbfe;">
+                    <label style="color:#1d4ed8;">⚡ Частичная фиксация</label>
+                    <div style="font-size:13px; font-weight:600; color:#1e3a8a;">
+                        TP1: ${t.p1Pct}% по цене ${t.p1Price} | Остаток ${(100 - t.p1Pct)}% по ${t.exit}
+                    </div>
+                </div>
+            `;
+        } else {
+            partialsDetail.innerHTML = '';
+        }
 
         const img1Box = document.getElementById('v-img1-box');
         const img2Box = document.getElementById('v-img2-box');
@@ -906,7 +1008,7 @@
                 <td>${t.date}</td>
                 <td style="font-weight:600">${t.asset}</td>
                 <td class="${t.dir === 'Long' ? 'dir-long' : 'dir-short'}">${t.dir === 'Long' ? '↗ лонг' : '↘ шорт'}</td>
-                <td>${t.model}</td>
+                <td>${t.model}${t.p1Price ? ' <span style="font-size:10px; color:#2563eb;">(TP1)</span>' : ''}</td>
                 <td class="${rClass}">${t.status}</td>
                 <td class="${rClass}">${t.rMulti > 0 ? '+' : ''}${t.rMulti.toFixed(2)}R</td>
                 <td class="${pnlClass}">${t.pnl > 0 ? '+' : ''}${t.pnl.toFixed(2)} $</td>
@@ -942,7 +1044,6 @@
         updateChartDataByTimeframe(filteredTrades);
     }
 
-    /* Фильтрация данных для графика по выпадающему таймфрейму */
     function updateChartDataByTimeframe(allTrades) {
         let chartTrades = [...allTrades].sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date();
