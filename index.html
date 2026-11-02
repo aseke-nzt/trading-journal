@@ -116,7 +116,7 @@
         .dir-short { color: var(--loss-color); }
 
         /* Фильтры */
-        .filter-group { margin-bottom: 12px; }
+        .filter-group { margin-bottom: 0; }
         .filter-group-name { font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;}
         .tags { display: flex; gap: 8px; flex-wrap: wrap; }
         .tag { padding: 4px 12px; border: 1px solid var(--border-color); border-radius: 16px; font-size: 12px; color: var(--text-main); cursor: pointer; user-select: none; }
@@ -164,7 +164,7 @@
 
         .partial-box { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 4px; }
 
-        /* ================= АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ ================= */
+        /* Адаптивность */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .container { gap: 14px; }
@@ -287,7 +287,7 @@
         </div>
     </div>
 
-    <!-- Блок фильтров со сворачиванием -->
+    <!-- Блок фильтров -->
     <div class="card">
         <div class="table-header" style="margin-bottom: 12px;">
             <span>⚙ Фильтры</span>
@@ -301,10 +301,6 @@
                     <div class="tag" onclick="toggleFilterTag(this, 'status', 'LOSS')">LOSS</div>
                     <div class="tag" onclick="toggleFilterTag(this, 'status', 'BE')">BE</div>
                 </div>
-            </div>
-            <div class="filter-group" style="margin-bottom: 0;">
-                <div class="filter-group-name">План входа</div>
-                <div class="tags" id="modelFilterTags"></div>
             </div>
         </div>
     </div>
@@ -539,7 +535,7 @@
     let activeZoneId = 'pz1';
     let currentViewingId = null;
 
-    let activeFilters = { status: null, model: null };
+    let activeFilters = { status: null };
 
     document.getElementById('initialDepositInput').value = initialDeposit;
     document.getElementById('t-date').valueAsDate = new Date();
@@ -578,22 +574,6 @@
             el.classList.add('active');
         }
         updateDashboard();
-    }
-
-    function renderModelFilterTags() {
-        const container = document.getElementById('modelFilterTags');
-        container.innerHTML = '';
-        
-        const models = [...new Set(trades.map(t => t.model).filter(Boolean))];
-        if (models.length === 0) {
-            container.innerHTML = '<span style="font-size:11px; color:var(--text-muted)">Нет сохраненных планов</span>';
-            return;
-        }
-
-        models.forEach(m => {
-            const activeClass = activeFilters.model === m ? 'active' : '';
-            container.innerHTML += `<div class="tag ${activeClass}" onclick="toggleFilterTag(this, 'model', '${m}')">${m}</div>`;
-        });
     }
 
     function setChartTimeframe(tf, btnEl) {
@@ -979,14 +959,11 @@
     }
 
     function updateDashboard() {
-        renderModelFilterTags();
-
         const tbody = document.getElementById('tradesTable');
         tbody.innerHTML = '';
 
         const filteredTrades = trades.filter(t => {
             if (activeFilters.status && t.status !== activeFilters.status) return false;
-            if (activeFilters.model && t.model !== activeFilters.model) return false;
             return true;
         });
 
